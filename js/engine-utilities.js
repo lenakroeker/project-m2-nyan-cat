@@ -21,6 +21,7 @@ const nextEnemySpot = (enemies) => {
     spotsTaken[enemy.spot] = true;
   });
 
+
   // We are now in a position to find out position. We declare a variable candidate that is initially undefined.
   // candidate represents a potential spot. The variable will be repeatedly assigned different numbers.
   // We will randomly try different spots until we find out that is available
@@ -32,6 +33,21 @@ const nextEnemySpot = (enemies) => {
 
   // When the while loop is finished, we are assured that we have a number that corresponds to a free spot, so we return it.
   return candidate;
+};
+
+const nextTreatSpot = (treats) => {
+  const treatSpots = GAME_WIDTH / TREAT_WIDTH;
+  const spotsTaken = [false, false, false, false, false];
+  treats.forEach((treat) => {
+    spotsTaken[treat.spot] = true;
+  });
+
+  let candidate = undefined;
+  while (candidate === undefined || spotsTaken[candidate]) {
+    candidate = Math.floor(Math.random() * treatSpots);
+  }
+  return candidate
+
 };
 
 // addBackground contains all the logic to display the starry background of the game.
@@ -61,6 +77,6 @@ const addBackground = (root) => {
   whiteBox.style.top = `${GAME_HEIGHT}px`;
   whiteBox.style.height = `${ENEMY_HEIGHT}px`;
   whiteBox.style.width = `${GAME_WIDTH}px`;
-  whiteBox.style.background = '#fff';
+  whiteBox.style.background = 'transparent';
   root.append(whiteBox);
 };
