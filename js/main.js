@@ -26,4 +26,15 @@ document.addEventListener('keydown', keydownHandler);
 // We call the gameLoop method to start the game
 // gameEngine.gameLoop();
 
-document.getElementById("start").addEventListener("click", gameEngine.gameLoop)
+document.getElementById("start").addEventListener("click", function () { restart(); gameEngine.music.play(); gameEngine.gameLoop() });
+
+
+function restart() {
+  setTimeout(function () {
+    score = 0;
+    catsev = 0;
+    level = 1;
+    scoreSpot.innerText = 0;
+    catsEvSpot.innerText = catsev;
+  }, 20)
+}

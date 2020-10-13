@@ -46,6 +46,9 @@ class Enemy {
     // Show that the user can actually see the img DOM node, we append it to the root DOM node.
     theRoot.appendChild(this.domElement);
     this.speed = Math.random() / 2 + 0.25;
+
+    this.sound = document.createElement("audio");
+    this.sound.src = "nyan1.mp3";
   }
 
   // We set the speed property of the enemy. This determines how fast it moves down the screen.
@@ -64,7 +67,7 @@ class Enemy {
     // the destroyed property to indicate that the enemy should no longer be in play
     if (this.y > GAME_HEIGHT) {
       this.root.removeChild(this.domElement);
-
+      this.sound.play();
       this.destroyed = true;
     }
   }

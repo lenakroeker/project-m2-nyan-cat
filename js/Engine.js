@@ -1,14 +1,28 @@
 
-// // scorekeeping
+let start = document.getElementById("start");
+
+// scorekeeping
 const scoreSpot = document.getElementById("score");
 let score = 0;
 scoreSpot.innerHTML = score;
-let maxscore = 0;
+
 
 // level
 const levelSpot = document.getElementById("level");
 let level = 1;
 levelSpot.innerHTML = level;
+
+// high score
+const highSpot = document.getElementById("high");
+let highscore = 0;
+highSpot.innerHTML = highscore;
+
+// cats evaded
+const catsEvSpot = document.getElementById("cats");
+let catsev = 0;
+catsEvSpot.innerHTML = catsev;
+
+let control = document.getElementById("controlPanel");
 
 
 
@@ -33,6 +47,9 @@ class Engine {
     this.enemies = [];
     // add treats
     this.treats = [];
+    // music
+    this.music = document.createElement("audio");
+    this.music.src = "gametune.mp3";
     // We add the background image to the game
     addBackground(this.root);
   }
@@ -43,6 +60,9 @@ class Engine {
   //  - Detects a collision between the player and any enemy
   //  - Removes enemies that are too low from the enemies array
   gameLoop = () => {
+    document.getElementById("lose").style.display = "none";
+    document.getElementById("win").style.display = "none";
+    start.style.display = "none";
     // This code is to see how much time, in milliseconds, has elapsed since the last
     // time this method was called.
     // (new Date).getTime() evaluates to the number of milliseconds since January 1st, 1970 at midnight.
@@ -57,13 +77,18 @@ class Engine {
     // Furthermore, if any enemy is below the bottom of our game, its destroyed property will be set. (See Enemy.js)
     this.enemies.forEach((enemy) => {
       enemy.update(timeDiff);
-      console.log(enemy.parentElement);
     });
 
     // We remove all the destroyed enemies from the array referred to by \`this.enemies\`.
     // We use filter to accomplish this.
     // Remember: this.enemies only contains instances of the Enemy class.
     this.enemies = this.enemies.filter((enemy) => {
+      if (enemy.destroyed) {
+        score += 1;
+        scoreSpot.innerHTML = score;
+        catsev += 1;
+        catsEvSpot.innerHTML = catsev;
+      }
       return !enemy.destroyed;
     });
 
@@ -94,34 +119,59 @@ class Engine {
     // and return from the method (Why is the return statement important?)
     if (this.isPlayerDead()) {
       let loseSound = document.createElement("audio");
-      loseSound.src = "losesound.mp3";
+      loseSound.src = "lose.mp3";
+      this.music.pause();
+      this.music.currentTime = 0;
       loseSound.play();
-      score = 0;
       scoreSpot.innerText = score;
       MAX_ENEMIES = 1;
-      window.alert(`Game over! Your high-score is ${maxscore}`);
+      start.style.display = "block";
+      document.getElementById("lose").style.display = "block";
+      // window.alert(`Game over! Your high-score is ${highscore}`);
       document.getElementById("start").innerText = "Play Again!";
       return;
     }
 
 
     if (this.eatTreat()) {
-      score += 5;
+      score += 1;
       let eatSound = document.createElement("audio");
       eatSound.src = "gamesound.mp3";
       eatSound.play();
       scoreSpot.innerHTML = score;
+      document.getElementById("controlPanel").style.background = "white";
+      setTimeout(function () { document.getElementById("controlPanel").style.background = "yellow" }, 100);
     }
 
-    if (score > maxscore) {
-      maxscore = score;
+    if (score > highscore) {
+      highscore = score;
+      highSpot.innerHTML = highscore;
     }
+
+    // bonus
+
+    if (catsev === 10 || catsev === 25) {
+      score += 1;
+      document.body.style.background = "lightgreen";
+      document.getElementById("bonus").style.display = "block";
+      setTimeout(function () { document.getElementById("bonus").style.display = "none"; document.body.style.background = "darkblue"; }, 500);
+    }
+    if (catsev === 40 || catsev === 60 || catsev === 70) {
+      score += 3;
+      document.body.style.background = "blue";
+      document.getElementById("bonus").style.display = "block";
+      setTimeout(function () { document.getElementById("bonus").style.display = "none"; document.body.style.background = "lightgreen"; }, 500);
+    }
+
 
     if (score < 100) {
       level = 1;
       levelSpot.innerHTML = level;
       let MAX_ENEMIES = 1;
-      document.body.style.background = "rgb(255, 194, 192)";
+      document.body.style.background = "black";
+      control.style.background = "skyblue";
+      control.style.color = "black";
+      control.style.border = "5px solid blue";
       while (this.enemies.length < MAX_ENEMIES) {
         const spot = nextEnemySpot(this.enemies);
         this.enemies.push(new Enemy(this.root, spot));
@@ -132,7 +182,9 @@ class Engine {
       level = 2;
       levelSpot.innerHTML = level;
       let MAX_ENEMIES = 2;
-      document.body.style.background = "rgb(255, 194, 192)";
+      document.body.style.background = "black";
+      control.style.background = "rgb(255, 194, 192)";
+      control.style.border = "5px solid red";
       while (this.enemies.length < MAX_ENEMIES) {
         const spot = nextEnemySpot(this.enemies);
         this.enemies.push(new Enemy(this.root, spot));
@@ -143,7 +195,9 @@ class Engine {
       level = 3;
       levelSpot.innerHTML = level;
       let MAX_ENEMIES = 3;
-      document.body.style.background = "rgb(228, 255, 192)";
+      document.body.style.background = "black";
+      control.style.background = "lightgreen";
+      control.style.border = "5px solid green";
       while (this.enemies.length < MAX_ENEMIES) {
         const spot = nextEnemySpot(this.enemies);
         this.enemies.push(new Enemy(this.root, spot));
@@ -154,7 +208,9 @@ class Engine {
       level = 4;
       levelSpot.innerHTML = level;
       let MAX_ENEMIES = 4;
-      document.body.style.background = "rgb(188, 152, 255)";
+      document.body.style.background = "black";
+      control.style.background = "rgb(188, 152, 255)";
+      control.style.border = "5px solid purple";
       while (this.enemies.length < MAX_ENEMIES) {
         const spot = nextEnemySpot(this.enemies);
         this.enemies.push(new Enemy(this.root, spot));
@@ -165,15 +221,32 @@ class Engine {
       level = 4;
       levelSpot.innerHTML = "<span id='final'>final level!</span>";
       let MAX_ENEMIES = 5;
+      control.style.background = "black";
+      control.style.color = "white";
+      control.style.border = "5px solid white";
       document.body.style.background = "black";
       while (this.enemies.length < MAX_ENEMIES) {
         const spot = nextEnemySpot(this.enemies);
         this.enemies.push(new Enemy(this.root, spot));
       }
     }
-
+    // winstate 
     if (score >= 500) {
-      window.alert('You win!!!');
+      document.getElementById("win").style.display = "block";
+      document.getElementById("start").innerText = "Play Again!";
+      document.body.style.background = "green";
+      // window.alert('You win!!!');
+      this.music.pause();
+      this.music.currentTime = 0;
+      let winSound = document.createElement("audio");
+      winSound.src = "win.mp3";
+      winSound.play();
+      score = 0;
+      scoreSpot.innerText = score;
+      MAX_ENEMIES = 1;
+      start.style.display = "block";
+      catsev = 0;
+      catsEvSpot.innerText = catsev;
       return;
     }
 
@@ -189,7 +262,6 @@ class Engine {
     this.enemies.map((enemy) => {
       if (enemy.y > GAME_HEIGHT - PLAYER_HEIGHT - ENEMY_HEIGHT && (this.player.x === enemy.x)) {
         deadness = true;
-        score = 0;
       }
     })
     return deadness;
